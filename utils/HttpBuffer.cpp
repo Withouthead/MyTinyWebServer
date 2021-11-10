@@ -37,3 +37,13 @@ void HttpBuffer::ClearWriteBuffer() {
     write_buffer.clear();
 }
 
+unsigned long HttpBuffer::SearchSubString(const std::string &s) {
+    return read_buffer.find(s);
+}
+
+std::string HttpBuffer::GetStringFromReadBuffer(int index) {//如果找不到是返回string::nop
+    std::string sub_string = read_buffer.substr(index + 1);
+    read_buffer.erase(0, index + 1);
+    return sub_string;
+}
+

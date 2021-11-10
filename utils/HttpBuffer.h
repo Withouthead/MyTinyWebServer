@@ -21,6 +21,8 @@ public:
     ssize_t WriteFd(int fd);
     void ClearReadBuffer();
     void ClearWriteBuffer();
+    unsigned long SearchSubString(const std::string& s);
+    std::string GetStringFromReadBuffer(int index); //返回包含index及其以前的string
 private:
     std::string read_buffer;
     std::string write_buffer;
