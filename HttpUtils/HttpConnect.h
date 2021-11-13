@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cassert>
+#include <sys/uio.h>
 #include "../utils/HttpBuffer.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
@@ -25,7 +26,7 @@ public:
     ssize_t Write();
     void Close();
 
-    void Process();
+    bool Process();
 private:
     int client_sockfd;
     sockaddr_in client_sockaddr;
@@ -39,6 +40,7 @@ private:
     HttpResponse http_response;
     HttpRequest http_request;
 
+    std::string src_dir;
 
 
 

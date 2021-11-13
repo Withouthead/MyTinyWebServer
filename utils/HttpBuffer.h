@@ -20,15 +20,20 @@ public:
     ssize_t WriteFd(int fd);
     unsigned long SearchSubString(const std::string& s);
     std::string GetStringFromReadBuffer(size_t index); //返回包含index及其以前的string
-    void ClearBuffer();
-    size_t size();
+    void ClearAllBuffer();
+    size_t UsableSize();
 
     ssize_t Append(const std::string &s);
-
+    void ClearBuffByLen(int len);
+    const char* data();
 private:
     std::string buff;
+    std::string::size_type usable_index;
+    void FixPosition(std::string::size_type index);
+
 
 };
+
 
 
 #endif //MYTINYSERVER_HTTPBUFFER_H

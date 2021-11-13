@@ -38,6 +38,9 @@ public:
     };
 
     bool Parse(HttpBuffer& buffer);
+    void Init();
+
+    bool IsKeepAlive() const;
 
 private:
     HttpBuffer buff;
@@ -46,7 +49,14 @@ private:
     std::string http_version;
     std::string http_body;
     std::string http_request_path;
+public:
+    const std::string &getHttpRequestPath() const;
+
+    void setHttpRequestPath(const std::string &httpRequestPath);
+
+private:
     std::unordered_map<std::string, std::string> header_info;
+
 
     bool ParseRequestLine(const std::string& line);
     void ParseHeader(const std::string& header);

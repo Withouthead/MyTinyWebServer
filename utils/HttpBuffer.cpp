@@ -29,21 +29,37 @@ ssize_t HttpBuffer::WriteFd(int fd) {
     return len;
 }
 
-void HttpBuffer::ClearBuffer() {
+void HttpBuffer::ClearAllBuffer() {
+    usable_index = 0;
     buff.clear();
 }
 
 unsigned long HttpBuffer::SearchSubString(const std::string &s) {
-    return buff.find(s);
+    return buff.find(s, usable_index);
 }
 
 std::string HttpBuffer::GetStringFromReadBuffer(size_t index) {//如果找不到是返回string::nop
-    std::string sub_string = buff.substr(index + 1);
-    buff.erase(0, index + 1);
+    std::string sub_string = buff.substr(usable_index, index + 1);
+    FixPosition(index + 1);
     return sub_string;
 }
 
-size_t HttpBuffer::size() {
-    return buff.size();
+size_t HttpBuffer::UsableSize() {
+    return buff.size() - usable_index;
 }
+
+const char *HttpBuffer::data() {
+    return buff.data() + usable_index;
+}
+
+void HttpBuffer::FixPosition(std::string::size_type index) {
+    usable_index = index;
+}
+
+void HttpBuffer::ClearBuffByLen(int len) {
+    assert(len >= 0);
+    assert(len + usable_index < buff.size());
+    usable_index += len;
+}
+
 

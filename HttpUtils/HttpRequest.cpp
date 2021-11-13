@@ -39,7 +39,7 @@ void HttpRequest::ParseBody(const std::string& body) {
 
 bool HttpRequest::Parse(HttpBuffer &buffer) {
     const std::string CRLF = "\r\n";
-    while (state != FINISH && buffer.size()) {
+    while (state != FINISH && buffer.UsableSize()) {
         size_t crlf_index = buffer.SearchSubString(CRLF);
         std::string line(buffer.GetStringFromReadBuffer(crlf_index + CRLF.size() - 1));
         line = line.substr(0, line.size() - CRLF.size());
@@ -51,7 +51,7 @@ bool HttpRequest::Parse(HttpBuffer &buffer) {
                 break;
             case HEADER:
                 ParseHeader(line);
-                if (buffer.size() <= 0)
+                if (buffer.UsableSize() <= 0)
                     state = FINISH;
                 break;
             case BODY:
@@ -78,4 +78,30 @@ void HttpRequest::ParsePath() {
             http_request_path = "/404.html";
     }
 
+}
+
+bool HttpRequest::IsKeepAlive() const {
+    if (header_info.find("Connection") != header_info.end())
+    {
+        return header_info.find("Connection")->second == "keep-alive" && http_version == "1.1";
+    }
+    return false;
+}
+
+void HttpRequest::Init() {
+    buff.ClearAllBuffer();
+    http_method.clear();
+    http_version.clear();
+    http_request_path.clear();
+    state = REQUEST_LINE;
+    header_info.clear();
+
+}
+
+const std::string &HttpRequest::getHttpRequestPath() const {
+    return http_request_path;
+}
+
+void HttpRequest::setHttpRequestPath(const std::string &httpRequestPath) {
+    http_request_path = httpRequestPath;
 }

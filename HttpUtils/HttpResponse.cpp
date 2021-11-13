@@ -96,7 +96,7 @@ void HttpResponse::UnmapFile() {
     }
 }
 
-void HttpResponse::ErrorContent(HttpBuffer &buffer, const std::string& message) {
+void HttpResponse::ErrorContent(HttpBuffer &buffer, const std::string& message) const {
     std::string body;
     std::string status;
     body += "<html><title>Error</title>";
@@ -111,4 +111,60 @@ void HttpResponse::ErrorContent(HttpBuffer &buffer, const std::string& message) 
 
     buffer.Append("Content-length :" + std::to_string(body.size()) + "\r\n\r\n");
     buffer.Append(body);
+}
+
+void HttpResponse::Init(const std::string& src_dir_, const std::string& path_, bool is_keep_alive_, int code_) {
+    assert(!src_dir_.empty());
+    src_dir = src_dir_;
+    assert(!path_.empty());
+    path = path_;
+    is_keep_alive = is_keep_alive_;
+    code = code_;
+}
+
+void HttpResponse::MakeResponse(HttpBuffer &buffer) {
+    if(stat((src_dir + path).data(), &mm_file_stat) < 0 || S_ISDIR(mm_file_stat.st_mode))
+    {
+        code = 404;
+    }
+    else if(!(mm_file_stat.st_mode & S_IROTH))
+    {
+        code = 403;
+    }
+    else if(code == -1)
+        code == 200;
+    ErrorHtml();
+    AddStateLine(buffer);
+    AddHeader(buffer);
+    AddContent(buffer);
+
+}
+
+void HttpResponse::ErrorHtml() {
+    if(Code_Path.count(code))
+    {
+        path = Code_Path.find(code)->second;
+        stat((src_dir + path).data(), &mm_file_stat);
+    }
+}
+
+char *HttpResponse::getMmFile() const {
+    return mm_file;
+}
+
+int HttpResponse::getFileLen() const {
+    return mm_file_stat.st_size;
+}
+
+HttpResponse::~HttpResponse() {
+    UnmapFile();
+}
+
+HttpResponse::HttpResponse() {
+    code = -1;
+    path = src_dir = "";
+    is_keep_alive = false;
+    mm_file = nullptr;
+    mm_file_stat = {0};
+
 }
