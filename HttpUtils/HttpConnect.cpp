@@ -4,6 +4,8 @@
 
 #include "HttpConnect.h"
 
+#include <utility>
+
 ssize_t HttpConnect::Read() {
     ssize_t len = 0;
     do {
@@ -45,7 +47,8 @@ ssize_t HttpConnect::Write() {
 }
 
 void HttpConnect::Close() {
-    // TODO: Finish it;
+    http_response.UnmapFile();
+    close(client_sockfd);
 
 
 }
@@ -55,16 +58,12 @@ HttpConnect::HttpConnect() {
     client_sockaddr = {0};
     is_close = true;
 
-}
-
-HttpConnect::HttpConnect(int fd_, const sockaddr_in &addr)
-        : client_sockfd(fd_), client_sockaddr(addr) {
-    assert(client_sockfd >= 0);
 
 }
+
 
 HttpConnect::~HttpConnect() {
-    Close();
+    http_response.UnmapFile();
 }
 
 bool HttpConnect::Process() {
@@ -87,5 +86,20 @@ bool HttpConnect::Process() {
     }
 
     return true;
+}
+
+void HttpConnect::Init(int client_fd, sockaddr_in client_addr, bool is_et_, std::string src_dir_) {
+    client_sockfd = client_fd;
+    client_sockaddr = client_addr;
+    read_buffer.ClearAllBuffer();
+    write_buffer.ClearAllBuffer();
+    memset(iov, 0, sizeof(iov));
+    is_et = is_et_;
+    src_dir = src_dir_;
+    is_close = false;
+}
+
+HttpConnect::HttpConnect(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_) {
+    Init(client_fd, client_addr, is_et, src_dir_);
 }
 

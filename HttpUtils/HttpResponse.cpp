@@ -85,7 +85,7 @@ void HttpResponse::AddContent(HttpBuffer &buffer) {
     int *mm_point = (int *) mmap(nullptr, mm_file_stat.st_size, PROT_READ, MAP_PRIVATE, src_fd, 0);
     mm_file = (char *) mm_point;
     close(src_fd);
-    buffer.Append("Content-length: " + std::to_string(mm_file_stat.st_size));
+    buffer.Append("Content-length: " + std::to_string(mm_file_stat.st_size) + "\r\n\r\n");
 }
 
 void HttpResponse::UnmapFile() {

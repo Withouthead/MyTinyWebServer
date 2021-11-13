@@ -13,8 +13,8 @@ bool HttpRequest::ParseRequestLine(const std::string& line) {
     if(std::regex_match(line, sub_match, request_line_regex))
     {
         http_method = sub_match[1];
-        http_version = sub_match[2];
-        http_request_path = sub_match[3];
+        http_version = sub_match[3];
+        http_request_path = sub_match[2];
         state = HEADER;
         return true;
     }

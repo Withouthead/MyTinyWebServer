@@ -58,7 +58,8 @@ void HttpBuffer::FixPosition(std::string::size_type index) {
 
 void HttpBuffer::ClearBuffByLen(int len) {
     assert(len >= 0);
-    assert(len + usable_index < buff.size());
+    std::cout << "len : " << buff.size() << std::endl;
+    assert(len + usable_index <= buff.size());
     usable_index += len;
 }
 

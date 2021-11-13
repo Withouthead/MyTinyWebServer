@@ -20,12 +20,13 @@
 class HttpConnect {
 public:
     HttpConnect();
-    HttpConnect(int fd_, const sockaddr_in& addr);
+    HttpConnect(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_);
     ~HttpConnect();
     ssize_t Read();
     ssize_t Write();
     void Close();
 
+    void Init(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_);
     bool Process();
 private:
     int client_sockfd;
