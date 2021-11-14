@@ -57,7 +57,7 @@ inline ThreadPool::ThreadPool(size_t threads)
 }
 
 template<typename F, typename... Args>
-auto ThreadPool::enqueue(F &&f, Args &&args...) -> std::future<typename std::result_of<F(Args...)>::type> {
+auto ThreadPool::enqueue(F &&f, Args &&... args) -> std::future<std::result_of<F(Args...)>::type>  {
     using return_type = typename  std::result_of<F(Args...)>::type;
     auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     std::future<return_type> res = task->get_future();
@@ -80,4 +80,6 @@ inline  ThreadPool::~ThreadPool() {
     for(std::thread &worker : workers)
         worker.join();
 }
+
+
 #endif //MYTINYSERVER_THREADPOOL_H
