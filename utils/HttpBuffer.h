@@ -21,7 +21,7 @@ public:
     unsigned long SearchSubString(const std::string& s);
     std::string GetStringFromReadBuffer(size_t index); //返回包含index及其以前的string
     void ClearAllBuffer();
-    size_t UsableSize();
+    size_t UsableSize() const;
 
     ssize_t Append(const std::string &s);
     void ClearBuffByLen(int len);

@@ -20,14 +20,21 @@
 class HttpConnect {
 public:
     HttpConnect();
-    HttpConnect(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_);
+    HttpConnect(int client_fd, sockaddr_in client_addr);
     ~HttpConnect();
     ssize_t Read();
-    ssize_t Write();
+    ssize_t Write(int& write_error);
     void Close();
 
-    void Init(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_);
+    void Init(int client_fd, sockaddr_in client_addr);
     bool Process();
+
+    static std::string src_dir;
+    static int user_count;
+    static bool is_et;
+    int getClientSockfd() const;
+    int ToWriteSize() const;
+    bool IsKeepAlive() const;
 private:
     int client_sockfd;
     sockaddr_in client_sockaddr;
@@ -35,13 +42,13 @@ private:
     iovec iov[2];
     HttpBuffer read_buffer;
     HttpBuffer write_buffer;
-    bool is_et;
+
     bool is_close;
 
     HttpResponse http_response;
     HttpRequest http_request;
 
-    std::string src_dir;
+
 
 
 

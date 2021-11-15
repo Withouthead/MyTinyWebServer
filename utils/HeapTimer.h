@@ -27,6 +27,7 @@ struct TimerNode
     }
 };
 class HeapTimer {
+public:
     void AddNde(int id, int timeout, const TimeoutCallBack& call_back);
     void DelNode(int index);
     void Tick();

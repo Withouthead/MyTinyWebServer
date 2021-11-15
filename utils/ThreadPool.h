@@ -39,7 +39,7 @@ inline ThreadPool::ThreadPool(size_t threads)
         workers.emplace_back(
                 [this] {
                     while (true) {
-                        std::function<void> task;
+                        std::function<void()> task;
                         {
                             std::unique_lock<std::mutex> lock(this->queue_mutex);
                             this->condition.wait(lock,
@@ -57,7 +57,7 @@ inline ThreadPool::ThreadPool(size_t threads)
 }
 
 template<typename F, typename... Args>
-auto ThreadPool::enqueue(F &&f, Args &&... args) -> std::future<std::result_of<F(Args...)>::type>  {
+auto ThreadPool::enqueue(F &&f, Args &&... args) -> std::future<typename std::result_of<F(Args...)>::type>  {
     using return_type = typename  std::result_of<F(Args...)>::type;
     auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     std::future<return_type> res = task->get_future();
@@ -65,7 +65,7 @@ auto ThreadPool::enqueue(F &&f, Args &&... args) -> std::future<std::result_of<F
         std::unique_lock<std::mutex> lock(queue_mutex);
         if(stop)
             throw std::runtime_error("enqueue on stopped threadpool");
-        tasks.emplace([task](){(*task)()});
+        tasks.emplace([task](){(*task)();});
     }
     condition.notify_one();
     return res;

@@ -44,7 +44,7 @@ std::string HttpBuffer::GetStringFromReadBuffer(size_t index) {//如果找不到
     return sub_string;
 }
 
-size_t HttpBuffer::UsableSize() {
+size_t HttpBuffer::UsableSize() const{
     return buff.size() - usable_index;
 }
 

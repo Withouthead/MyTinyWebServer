@@ -16,12 +16,14 @@ ssize_t HttpConnect::Read() {
     return len;
 }
 
-ssize_t HttpConnect::Write() {
+ssize_t HttpConnect::Write(int& write_error) {
     ssize_t len = 0;
     do {
         len = writev(client_sockfd, iov, iov_cnt);
-        if(len <= 0)
+        if(len <= 0) {
+            write_error = errno;
             break;
+        }
         if(iov[0].iov_len + iov[1].iov_len == 0)
             break;
         else if(static_cast<size_t>(len) > iov[0].iov_len)//
@@ -88,18 +90,28 @@ bool HttpConnect::Process() {
     return true;
 }
 
-void HttpConnect::Init(int client_fd, sockaddr_in client_addr, bool is_et_, std::string src_dir_) {
+void HttpConnect::Init(int client_fd, sockaddr_in client_addr) {
     client_sockfd = client_fd;
     client_sockaddr = client_addr;
     read_buffer.ClearAllBuffer();
     write_buffer.ClearAllBuffer();
     memset(iov, 0, sizeof(iov));
-    is_et = is_et_;
-    src_dir = src_dir_;
     is_close = false;
 }
 
-HttpConnect::HttpConnect(int client_fd, sockaddr_in client_addr, bool is_et, std::string src_dir_) {
-    Init(client_fd, client_addr, is_et, src_dir_);
+HttpConnect::HttpConnect(int client_fd, sockaddr_in client_addr) {
+    Init(client_fd, client_addr);
+}
+
+int HttpConnect::getClientSockfd() const {
+    return client_sockfd;
+}
+
+int HttpConnect::ToWriteSize() const {
+    return write_buffer.UsableSize();
+}
+
+bool HttpConnect::IsKeepAlive() const {
+    return http_request.IsKeepAlive();
 }
 
