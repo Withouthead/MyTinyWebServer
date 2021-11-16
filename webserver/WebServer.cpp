@@ -3,13 +3,13 @@
 //
 
 #include "WebServer.h"
-
+int HttpConnect::user_count;
 WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, int thread_num, const std::string& src_dir_)
 :port(port_), timeout(timeout_), thread_pool(thread_num), open_linger(opt_linger_){
     if(src_dir_.empty())
-        src_dir = "./";
+        src_dir = "./root";
     HttpConnect::user_count = 0;
-    HttpConnect::src_dir = src_dir_;
+    HttpConnect::src_dir = src_dir;
     InitEventMode(trig_mode);
     InitServerSocket();
     is_close = false;
@@ -67,13 +67,13 @@ bool WebServer::InitServerSocket() {
     assert(ret >= 0);
 
     ret = bind(server_fd, (struct sockaddr *)&addr, sizeof(addr));
-    assert(ret);
+    assert(ret >=0);
 
     ret = listen(server_fd, 10);
-    assert(ret);
+    assert(ret >= 0);
 
     ret = epoller.AddFd(server_fd, listen_event | EPOLLIN);
-    assert(ret);
+    assert(ret >= 0);
 
     SetNonBlock(server_fd);
     return true;
@@ -82,9 +82,9 @@ bool WebServer::InitServerSocket() {
 
 int WebServer::SetNonBlock(int fd) {
     assert(fd >= 0);
-    int old_opt = fcntl(fd, F_GETFD, 0);
+    int old_opt = fcntl(fd, F_GETFL, 0);
     int new_opt = old_opt | O_NONBLOCK;
-    return fcntl(fd, F_SETFD, new_opt);
+    return fcntl(fd, F_SETFL, new_opt);
 }
 
 void WebServer::StartServer() {
@@ -105,6 +105,7 @@ void WebServer::StartServer() {
                 int event_flag = event.events;
                 if(fd == server_fd)
                 {
+                    std::cout << "new connect come in " << std::endl;
                     AcceptClient();
                 }
                 else if(event_flag & EPOLLIN)
@@ -112,7 +113,7 @@ void WebServer::StartServer() {
                     assert(users.count(fd));
                     ReadFromClient(&users[fd]);
                 }
-                else if(event_flag & EPOLLIN)
+                else if(event_flag & EPOLLOUT)
                 {
                     assert(users.count(fd) > 0);
                     WriteFromClient(&users[fd]);

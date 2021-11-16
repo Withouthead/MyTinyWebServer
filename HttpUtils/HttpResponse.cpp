@@ -47,7 +47,7 @@ void HttpResponse::AddStateLine(HttpBuffer &buffer) {
         code = 400;
         status = Code_Status.find(400)->second;
     }
-    buffer.Append("HTTP/1.1 " + std::to_string(code) + " " + status + "\r\b");
+    buffer.Append("HTTP/1.1 " + std::to_string(code) + " " + status + "\r\n");
 
 }
 

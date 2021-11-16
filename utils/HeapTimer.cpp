@@ -19,6 +19,7 @@ void HeapTimer::AddNde(int id, int timeout, const TimeoutCallBack &call_back) {
         new_node.call_back = call_back;
         new_node.id = id;
         new_node.expires = Clock::now() + MS(timeout);
+        node_pos[id] = index;
         heap.emplace_back(std::move(new_node));
         Heapify(index);
     }

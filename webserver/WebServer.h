@@ -12,6 +12,7 @@
 #include "Epoller.h"
 
 class WebServer {
+public:
     WebServer(int port_, int trig_mode, int timeout_, bool opt_linger, int thread_num, const std::string& src_dir_ = "");
     void StartServer();
     bool InitServerSocket();

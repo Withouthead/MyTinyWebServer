@@ -7,9 +7,10 @@ const int READBUFFSIZE = 65535;
 ssize_t HttpBuffer::ReadFd(int fd) {
     char read_temp_buffer[READBUFFSIZE];
     memset(read_temp_buffer, 0, sizeof(read_temp_buffer));
+    memset(read_temp_buffer, 0, sizeof(read_temp_buffer));
     ssize_t len = recv(fd, read_temp_buffer, sizeof(read_temp_buffer), 0);
-
-    assert(len >= 0);
+    printf("error :%s\n", strerror(errno));
+//    assert(len >= 0 || errno == EAGAIN);
 
     buff.append(read_temp_buffer);
     return len;

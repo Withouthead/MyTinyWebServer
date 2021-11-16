@@ -6,13 +6,16 @@
 
 #include <utility>
 
+bool HttpConnect::is_et;
+std::string HttpConnect::src_dir;
 ssize_t HttpConnect::Read() {
     ssize_t len = 0;
     do {
-        len = read_buffer.ReadFd(client_sockfd);
-        if (len <= 0)
+        int temp_len = read_buffer.ReadFd(client_sockfd);
+        if (temp_len <= 0)
             break;
-    } while (is_et);
+        len += temp_len;
+    } while (HttpConnect::is_et);
     return len;
 }
 
