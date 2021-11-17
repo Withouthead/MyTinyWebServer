@@ -6,17 +6,24 @@
 int HttpConnect::user_count;
 WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, int thread_num, const std::string& src_dir_)
 :port(port_), timeout(timeout_), thread_pool(thread_num), open_linger(opt_linger_){
+
+    ServerLog::Init("./log", ".log");
+    ServerLog::LogInfo("Server Init successfully");
+
+    ServerLog::LogInfo("=============INIT WebServer=============");
+    ServerLog::LogInfo("Trig Mode: %d", trig_mode);
+    ServerLog::LogInfo("Src Dir: %s", src_dir_.c_str());
+    ServerLog::LogInfo("Thread Num: %d", thread_num);
+    ServerLog::LogInfo("Time Out: %d", timeout_);
+    ServerLog::LogInfo("Opt Linger: %s", open_linger ? "Yes" : "No");
+
     if(src_dir_.empty())
         src_dir = "./root";
     HttpConnect::user_count = 0;
     HttpConnect::src_dir = src_dir;
-    InitEventMode(trig_mode);
-    InitServerSocket();
-    ServerLog::Init("./log", ".log");
-    ServerLog::LogInfo("Server Init successfully");
     is_close = false;
-
-
+    InitEventMode(trig_mode);
+    is_close = !InitServerSocket();
 }
 WebServer::~WebServer() {
     close(server_fd);
@@ -46,14 +53,24 @@ void WebServer::InitEventMode(int trig_mode) {
 }
 
 bool WebServer::InitServerSocket() {
+    if(is_close)
+        return false;
+    ServerLog::LogInfo("=============INIT ServerSocket===========");
     int ret;
+    std::string info = "InitServerSocket: ";
     sockaddr_in addr{};
     if(port > MAX_FD || port < 1024)
         return false;
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    assert(server_fd >= 0);
+    if(server_fd < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    ServerLog::LogInfo("Server Address: %s", inet_ntoa(addr.sin_addr));
     addr.sin_port = htons(port);
+    ServerLog::LogInfo("Server Port %d", port);
     addr.sin_family = AF_INET;
 
     struct linger opt_linger_{};
@@ -63,19 +80,39 @@ bool WebServer::InitServerSocket() {
         opt_linger_.l_onoff = 1;
     }
     ret = setsockopt(server_fd, SOL_SOCKET, SO_LINGER, &opt_linger_, sizeof(opt_linger_));
-    assert(ret >= 0);
+    if(ret < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
     int opt_val = 1;
     ret = setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, (const void*)&opt_val, sizeof(opt_val));
-    assert(ret >= 0);
+    if(ret < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
 
     ret = bind(server_fd, (struct sockaddr *)&addr, sizeof(addr));
-    assert(ret >=0);
+    if(ret < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
 
     ret = listen(server_fd, 10);
-    assert(ret >= 0);
+    if(ret < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
 
     ret = epoller.AddFd(server_fd, listen_event | EPOLLIN);
-    assert(ret >= 0);
+    if(ret < 0)
+    {
+        ServerLog::LogError("%s", strerror(errno));
+        return false;
+    }
 
     SetNonBlock(server_fd);
     return true;
@@ -93,6 +130,7 @@ void WebServer::StartServer() {
     int timeMs = -1;
     if(!is_close)
     {
+        ServerLog::LogInfo("=============StartServer=============");
         while(!is_close)
         {
             if(timeout > 0)
@@ -107,7 +145,6 @@ void WebServer::StartServer() {
                 int event_flag = event.events;
                 if(fd == server_fd)
                 {
-                    std::cout << "new connect come in " << std::endl;
                     AcceptClient();
                 }
                 else if(event_flag & EPOLLIN)
@@ -140,7 +177,8 @@ void WebServer::AcceptClient() {
 }
 
 void WebServer::AddClient(int fd, sockaddr_in &addr) {
-    assert(fd >= 0);
+    ServerLog::LogInfo("Add New Client :%d", fd);
+    ServerLog::LogInfo("Address :%s", inet_ntoa(addr.sin_addr));
     users[fd].Init(fd, addr);
     if(timeout > 0)
     {
@@ -152,6 +190,7 @@ void WebServer::AddClient(int fd, sockaddr_in &addr) {
 
 void WebServer::CloseConnect(HttpConnect *client) {
     assert(client);
+    ServerLog::LogInfo("%s Connection closed", inet_ntoa(client->getClientSockaddr().sin_addr));
     epoller.DelFd(client->getClientSockfd());
     client->Close();
 }
@@ -174,6 +213,7 @@ void WebServer::ExtentTime(HttpConnect *client_connect) {
 
 void WebServer::ReadTask(HttpConnect * client_connect) {
     int ret = -1;
+    ServerLog::LogInfo("%s Send Message", inet_ntoa(client_connect->getClientSockaddr().sin_addr));
     ret = client_connect->Read();
     if(ret <= 0)
     {
@@ -184,6 +224,7 @@ void WebServer::ReadTask(HttpConnect * client_connect) {
 
 void WebServer::ProcessTask(HttpConnect * client_connect) {
     assert(client_connect);
+    ServerLog::LogInfo("Process %s Request", inet_ntoa(client_connect->getClientSockaddr().sin_addr));
     if(client_connect->Process())
     {
         epoller.ModFd(client_connect->getClientSockfd(), connect_event | EPOLLOUT);
@@ -195,6 +236,7 @@ void WebServer::ProcessTask(HttpConnect * client_connect) {
 
 void WebServer::WriteTask(HttpConnect * client_connect) {
     assert(client_connect);
+    ServerLog::LogInfo("Response to %s", inet_ntoa(client_connect->getClientSockaddr().sin_addr));
     int ret = -1;
     int write_error = 0;
     ret = client_connect->Write(write_error);

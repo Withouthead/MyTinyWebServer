@@ -118,3 +118,7 @@ bool HttpConnect::IsKeepAlive() const {
     return http_request.IsKeepAlive();
 }
 
+const sockaddr_in &HttpConnect::getClientSockaddr() const {
+    return client_sockaddr;
+}
+

@@ -47,10 +47,12 @@ void HeapTimer::HeapifyDown(size_t index) {
 }
 
 void HeapTimer::HeapifyUp(size_t index) {
+    if(index == 0)
+        return;
     auto heap_size = heap.size();
     assert(index < heap_size);
     size_t father = (index - 1) / 2;
-    while(father >= 0)
+    while(father >= 0 && father < heap_size)
     {
         if(heap[index] < heap[father])
         {

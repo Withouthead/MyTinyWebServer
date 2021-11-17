@@ -39,6 +39,10 @@ public:
 private:
     int client_sockfd;
     sockaddr_in client_sockaddr;
+public:
+    const sockaddr_in &getClientSockaddr() const;
+
+private:
     int iov_cnt;
     iovec iov[2];
     HttpBuffer read_buffer;

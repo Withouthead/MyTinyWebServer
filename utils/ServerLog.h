@@ -21,9 +21,9 @@ public:
     static ServerLog* GetInstance();
     ~ServerLog();
     static void LogInfo(std::string format, ...);
-    static void LogDeBug(char* format, ...);
-    static void LogWarning(char* format, ...);
-    static void LogError(char* format, ...);
+    static void LogDeBug(std::string , ...);
+    static void LogWarning(std::string , ...);
+    static void LogError(std::string , ...);
     static void WriteThreadFun();
     static void Init(const std::string& path_, const std::string& suffix_);
 private:

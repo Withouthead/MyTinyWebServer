@@ -57,6 +57,7 @@ void ServerLog::Write(int level, char *format, va_list msg_va_list) {
 
     std::string msg_to_queue;
     msg_to_queue = GetFormatTimeLinePrefix() + " " + log_prefix + "    :" + msg + "\n";
+    printf("%s", msg_to_queue.c_str());
     bool is_success = log_queue.Push(msg_to_queue);
 
 
@@ -141,26 +142,29 @@ void ServerLog::LogInfo(std::string format, ...) {
     va_end(msg_va_list);
 }
 
-void ServerLog::LogDeBug(char *format, ...) {
+void ServerLog::LogDeBug(std::string format, ...) {
     ServerLog* p = GetInstance();
     va_list msg_va_list;
+    char* c_format = format.data();
     va_start(msg_va_list, format);
-    p->Write(1, format, msg_va_list);
+    p->Write(1, c_format, msg_va_list);
     va_end(msg_va_list);
 }
 
-void ServerLog::LogWarning(char *format, ...) {
+void ServerLog::LogWarning(std::string format, ...) {
     ServerLog* p = GetInstance();
     va_list msg_va_list;
+    char* c_format = format.data();
     va_start(msg_va_list, format);
-    p->Write(2, format, msg_va_list);
+    p->Write(2, c_format, msg_va_list);
     va_end(msg_va_list);
 }
 
-void ServerLog::LogError(char *format, ...) {
+void ServerLog::LogError(std::string format, ...) {
     ServerLog* p = GetInstance();
     va_list msg_va_list;
+    char* c_format = format.data();
     va_start(msg_va_list, format);
-    p->Write(3, format, msg_va_list);
+    p->Write(3, c_format, msg_va_list);
     va_end(msg_va_list);
 }
