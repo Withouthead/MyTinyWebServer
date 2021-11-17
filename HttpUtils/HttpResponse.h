@@ -16,6 +16,8 @@
 #include <cstring>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include "../utils/ServerLog.h"
+
 class HttpResponse {
 public:
     HttpResponse();

@@ -17,6 +17,7 @@
 #include "../utils/HttpBuffer.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+#include "../utils/ServerLog.h"
 class HttpConnect {
 public:
     HttpConnect();

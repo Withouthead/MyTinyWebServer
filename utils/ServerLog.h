@@ -13,22 +13,24 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <filesystem>
+#include <cstring>
 #include "BlockQueue.h"
 
 class ServerLog {
 public:
     static ServerLog* GetInstance();
     ~ServerLog();
-    void LogInfo(char* format, ...);
-    void LogBug(char* format, ...);
-    void LogWarning(char* format, ...);
-    void LogError(char* format, ...);
+    static void LogInfo(std::string format, ...);
+    static void LogDeBug(char* format, ...);
+    static void LogWarning(char* format, ...);
+    static void LogError(char* format, ...);
     static void WriteThreadFun();
+    static void Init(const std::string& path_, const std::string& suffix_);
 private:
     void WriteAsynchronous();
     std::string GetLevel(int level) const;
     void Write(int level, char* format, va_list msg_va_list);
-    void Init(const std::string& path_, const std::string& suffix_);
+
     ServerLog();
     std::string GetFormatTimeLinePrefix() const;
     std::string GetFileNameBaseSystime() const;

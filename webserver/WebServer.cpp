@@ -12,6 +12,8 @@ WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, i
     HttpConnect::src_dir = src_dir;
     InitEventMode(trig_mode);
     InitServerSocket();
+    ServerLog::Init("./log", ".log");
+    ServerLog::LogInfo("Server Init successfully");
     is_close = false;
 
 

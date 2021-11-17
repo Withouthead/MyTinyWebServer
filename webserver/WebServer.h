@@ -9,6 +9,7 @@
 #include "../HttpUtils/HttpConnect.h"
 #include "../utils/HeapTimer.h"
 #include "../utils/ThreadPool.h"
+#include "../utils/ServerLog.h"
 #include "Epoller.h"
 
 class WebServer {

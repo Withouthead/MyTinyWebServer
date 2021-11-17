@@ -38,9 +38,10 @@ bool BlockQueue<T>::Pop(T& item) {
     cv_consumer.wait(lock, [this]{ return !block_queue.empty() || is_close; });
     if(is_close)
         return false;
-    assert(block_queue.empty());
+    assert(block_queue.empty() == false);
     T value = block_queue.front();
     item = value;
+    block_queue.pop();
     cv_producer.notify_one();
     return true;
 }
@@ -48,8 +49,8 @@ bool BlockQueue<T>::Pop(T& item) {
 template<typename T>
 bool BlockQueue<T>::Push(const T& new_v) {
     std::unique_lock<std::mutex> lock(queue_mutex);
-    cv_producer.wait(lock, [this]{size() >= capacity;});
-    if(!is_close)
+    cv_producer.wait(lock, [this]{ return block_queue.size() <= capacity;});
+    if(is_close)
         return false;
     block_queue.push(new_v);
     cv_consumer.notify_one();
@@ -59,7 +60,8 @@ bool BlockQueue<T>::Push(const T& new_v) {
 template<typename T>
 void BlockQueue<T>::clear() {
     std::unique_lock<std::mutex> lock(queue_mutex);
-    block_queue.clear();
+    std::queue<T> empty;
+    std::swap( block_queue, empty );
 }
 
 template<typename T>
@@ -82,7 +84,8 @@ void BlockQueue<T>::flush() {
 template<typename T>
 void BlockQueue<T>::Close() {
     std::unique_lock<std::mutex> lock(queue_mutex);
-    block_queue.clear();
+    std::queue<T> empty;
+    std::swap( block_queue, empty );
     is_close = true;
     lock.unlock();
     cv_consumer.notify_all();

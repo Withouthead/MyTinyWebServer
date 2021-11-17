@@ -6,24 +6,25 @@
 #define LOG_MAX 65536
 void ServerLog::Init(const std::string& path_, const std::string& suffix_)
 {
-    file_name_suffix = suffix_;
-    file_path = path_;
-    if(!std::filesystem::exists(file_path))
+    ServerLog *p = GetInstance();
+    p->file_name_suffix = suffix_;
+    p->file_path = path_;
+    if(!std::filesystem::exists(p->file_path))
     {
-        std::filesystem::create_directories(file_path);
+        std::filesystem::create_directories(p->file_path);
     }
     time_t now_time = time(nullptr);
-    system_time = localtime(&now_time);
+    p->system_time = localtime(&now_time);
 
-    if(write_thread == nullptr)
+    if(p->write_thread == nullptr)
     {
         std::unique_ptr<std::thread> temp_pointer(new std::thread(WriteThreadFun));
-        write_thread = std::move(temp_pointer);
+        p->write_thread = std::move(temp_pointer);
     }
-    file_name = GetFileNameBaseSystime();
-    file_path += file_name;
-    log_file = fopen(file_path.c_str(), "w");
-    assert(log_file);
+    p->file_name = p->GetFileNameBaseSystime();
+    p->file_path = p->file_path / std::filesystem::path(p->file_name);
+    p->log_file = fopen(p->file_path.c_str(), "w");
+    assert(p->log_file);
 
 }
 
@@ -38,6 +39,7 @@ void ServerLog::Write(int level, char *format, va_list msg_va_list) {
     std::unique_lock<std::mutex> lock(log_mutex);
     std::string log_prefix = GetLevel(level);
     char msg[LOG_MAX];
+    memset(msg, 0, sizeof(msg));
     vsnprintf(msg, LOG_MAX, format, msg_va_list);
     time_t now_time = time(nullptr);
     struct tm* now_time_tm = localtime(&now_time);
@@ -55,7 +57,7 @@ void ServerLog::Write(int level, char *format, va_list msg_va_list) {
 
     std::string msg_to_queue;
     msg_to_queue = GetFormatTimeLinePrefix() + " " + log_prefix + "    :" + msg + "\n";
-    log_queue.Push(msg_to_queue);
+    bool is_success = log_queue.Push(msg_to_queue);
 
 
 }
@@ -85,6 +87,7 @@ void ServerLog::WriteAsynchronous() {
     {
         std::unique_lock<std::mutex> lock(file_mutex);
         fputs(msg_to_write.c_str(), log_file);
+        fflush(log_file);
     }
 
 }
@@ -128,30 +131,36 @@ void ServerLog::Flush() {
 
 }
 
-void ServerLog::LogInfo(char *format, ...) {
+void ServerLog::LogInfo(std::string format, ...) {
+
+    ServerLog* p = GetInstance();
     va_list msg_va_list;
+    char* c_format = format.data();
     va_start(msg_va_list, format);
-    Write(0, format, msg_va_list);
+    p->Write(0, c_format, msg_va_list);
     va_end(msg_va_list);
 }
 
-void ServerLog::LogBug(char *format, ...) {
+void ServerLog::LogDeBug(char *format, ...) {
+    ServerLog* p = GetInstance();
     va_list msg_va_list;
     va_start(msg_va_list, format);
-    Write(1, format, msg_va_list);
+    p->Write(1, format, msg_va_list);
     va_end(msg_va_list);
 }
 
 void ServerLog::LogWarning(char *format, ...) {
+    ServerLog* p = GetInstance();
     va_list msg_va_list;
     va_start(msg_va_list, format);
-    Write(2, format, msg_va_list);
+    p->Write(2, format, msg_va_list);
     va_end(msg_va_list);
 }
 
 void ServerLog::LogError(char *format, ...) {
+    ServerLog* p = GetInstance();
     va_list msg_va_list;
     va_start(msg_va_list, format);
-    Write(3, format, msg_va_list);
+    p->Write(3, format, msg_va_list);
     va_end(msg_va_list);
 }

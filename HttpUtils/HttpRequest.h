@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "../utils/HttpBuffer.h"
+#include "../utils/ServerLog.h"
 
 class HttpRequest {
 public:
