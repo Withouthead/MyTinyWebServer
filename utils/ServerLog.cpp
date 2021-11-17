@@ -33,16 +33,12 @@ std::string ServerLog::GetFormatTimeFileNamePrefix() const{
     return std::string(time_name);
 }
 
-void ServerLog::Write(int level, char *format, ...) {
+void ServerLog::Write(int level, char *format, va_list msg_va_list) {
 
     std::unique_lock<std::mutex> lock(log_mutex);
     std::string log_prefix = GetLevel(level);
-    va_list  msg_va_list;
     char msg[LOG_MAX];
-    va_start(msg_va_list, format);
     vsnprintf(msg, LOG_MAX, format, msg_va_list);
-    va_end(msg_va_list);
-
     time_t now_time = time(nullptr);
     struct tm* now_time_tm = localtime(&now_time);
 
@@ -130,4 +126,32 @@ void ServerLog::Flush() {
     log_queue.flush();
     fflush(log_file);
 
+}
+
+void ServerLog::LogInfo(char *format, ...) {
+    va_list msg_va_list;
+    va_start(msg_va_list, format);
+    Write(0, format, msg_va_list);
+    va_end(msg_va_list);
+}
+
+void ServerLog::LogBug(char *format, ...) {
+    va_list msg_va_list;
+    va_start(msg_va_list, format);
+    Write(1, format, msg_va_list);
+    va_end(msg_va_list);
+}
+
+void ServerLog::LogWarning(char *format, ...) {
+    va_list msg_va_list;
+    va_start(msg_va_list, format);
+    Write(2, format, msg_va_list);
+    va_end(msg_va_list);
+}
+
+void ServerLog::LogError(char *format, ...) {
+    va_list msg_va_list;
+    va_start(msg_va_list, format);
+    Write(3, format, msg_va_list);
+    va_end(msg_va_list);
 }
