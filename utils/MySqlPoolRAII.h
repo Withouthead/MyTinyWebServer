@@ -9,21 +9,23 @@
 class MySqlPoolRaII
 {
 public:
-    MySqlPoolRaII(MYSQL** sql_)
+    MySqlPoolRaII()
     {
-        *sql_ = MySqlPool::GetInstance();
-        sql = *sql_;
+        sql_connection = MySqlPool::GetInstance()->GetConnection();
     }
     ~MySqlPoolRaII()
     {
-        if(sql)
+        if(sql_connection)
         {
-            MySqlPool::GetInstance()->FreeConnection(sql);
+            MySqlPool::GetInstance()->FreeConnection(sql_connection);
         }
 
     }
+    MYSQL *getSqlConnection() {
+        return sql_connection;
+    }
 private:
-    MYSQL *sql;
+    MYSQL *sql_connection;
 };
 
 #endif //MYTINYSERVER_MYSQLPOOLRAII_H

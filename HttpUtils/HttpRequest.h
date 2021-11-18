@@ -16,9 +16,15 @@
 #include <regex>
 #include <unordered_map>
 #include <unordered_set>
+#include <mysql/mysql.h>
 #include "../utils/HttpBuffer.h"
 #include "../utils/ServerLog.h"
+#include "../utils/json.hpp"
+#include "../utils/MySqlPool.h"
+#include "../utils/MySqlPoolRAII.h"
 
+
+using json = nlohmann::json;
 class HttpRequest {
 public:
     enum PARSE_STATE {
@@ -50,6 +56,8 @@ private:
     std::string http_version;
     std::string http_body;
     std::string http_request_path;
+
+    bool is_login;
 public:
     const std::string &getHttpRequestPath() const;
 
@@ -57,18 +65,26 @@ public:
 
 private:
     std::unordered_map<std::string, std::string> header_info;
-
-
+    json post_info;
     bool ParseRequestLine(const std::string& line);
     void ParseHeader(const std::string& header);
     void ParseBody(const std::string& body);
     void ParsePath();
+    void ParsePost();
+    void ParseJson();
+    void ParseUrlEncode();
+    bool UserAuth(const std::string& name, const std::string& pwd);
+    static int ToDec(char c);
 
     const std::unordered_set<std::string>DEFAULT_HTML
     {
             "/index", "/register", "/login",
             "/welcome", "/video", "/picture",
     };
+    const std::unordered_map<std::string, int>DEFAULT_HTML_TAG
+            {
+                    {"/index", 0}, {"/login", 1}
+            };
 
 
 
