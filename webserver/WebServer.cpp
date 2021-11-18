@@ -18,8 +18,10 @@ WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, i
     ServerLog::LogInfo("Time Out: %d", timeout_);
     ServerLog::LogInfo("Opt Linger: %s", open_linger ? "Yes" : "No");
 
+    src_dir = src_dir_;
     if(src_dir_.empty())
         src_dir = "./root";
+
     HttpConnect::user_count = 0;
     HttpConnect::src_dir = src_dir;
     is_close = false;
