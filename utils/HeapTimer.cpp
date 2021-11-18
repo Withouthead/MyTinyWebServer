@@ -5,6 +5,7 @@
 #include "HeapTimer.h"
 
 void HeapTimer::AddNde(int id, int timeout, const TimeoutCallBack &call_back) {
+    std::unique_lock<std::mutex> lock(queue_mutex);
     if(node_pos.count(id) != 0)
     {
         auto index = node_pos.find(id)->second;
@@ -81,6 +82,7 @@ void HeapTimer::Heapify(size_t index) {
 }
 
 void HeapTimer::DelNode(int index) {
+    std::unique_lock<std::mutex> lock(queue_mutex);
     size_t heap_size = heap.size();
     assert(index < heap_size && index >= 0);
     size_t del_index = heap_size - 1;
@@ -94,6 +96,7 @@ void HeapTimer::DelNode(int index) {
 }
 
 void HeapTimer::DelNodeByFd(int fd) {
+    std::unique_lock<std::mutex> lock(queue_mutex);
     if(node_pos.count(fd) <= 0)
         return;
     size_t index = node_pos[fd];
@@ -131,11 +134,13 @@ int HeapTimer::GetTopTick() {
 }
 
 void HeapTimer::Clear() {
+    std::unique_lock<std::mutex> lock(queue_mutex);
     heap.clear();
     node_pos.clear();
 }
 
 void HeapTimer::Update(int id, int timeout) {
+    std::unique_lock<std::mutex> lock(queue_mutex);
     assert(!heap.empty() && node_pos.count(id));
     size_t index = node_pos.find(id)->second;
     heap[index].expires = Clock::now() + MS(timeout);

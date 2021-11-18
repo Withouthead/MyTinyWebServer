@@ -196,10 +196,15 @@ void WebServer::CloseConnect(HttpConnect *client) {
     if(client->IsClose())
         return;
     assert(client);
+    if(client->getClientSockfd() == 27)
+    {
+        printf("??");
+    }
     std::string addr_s(inet_ntoa(client->getClientSockaddr().sin_addr));
     epoller.DelFd(client->getClientSockfd());
     timer.DelNodeByFd(client->getClientSockfd());
     client->Close();
+    ServerLog::LogInfo("%d %s Connection closed", client->getClientSockfd(), inet_ntoa(client->getClientSockaddr().sin_addr));
 }
 
 void WebServer::ReadFromClient(HttpConnect * client_connect) {
@@ -220,7 +225,7 @@ void WebServer::ExtentTime(HttpConnect *client_connect) {
 
 void WebServer::ReadTask(HttpConnect * client_connect) {
     int ret = -1;
-    ServerLog::LogInfo("%s Send Message", inet_ntoa(client_connect->getClientSockaddr().sin_addr));
+    ServerLog::LogInfo("%d %s Send Message", client_connect->getClientSockfd(), inet_ntoa(client_connect->getClientSockaddr().sin_addr));
     ret = client_connect->Read();
     if(ret <= 0)
     {
@@ -231,7 +236,7 @@ void WebServer::ReadTask(HttpConnect * client_connect) {
 
 void WebServer::ProcessTask(HttpConnect * client_connect) {
     assert(client_connect);
-    ServerLog::LogInfo("Process %s Request", inet_ntoa(client_connect->getClientSockaddr().sin_addr));
+    ServerLog::LogInfo("Process %d %s Request", client_connect->getClientSockfd(), inet_ntoa(client_connect->getClientSockaddr().sin_addr));
     if(client_connect->Process())
     {
         epoller.ModFd(client_connect->getClientSockfd(), connect_event | EPOLLOUT);

@@ -11,6 +11,7 @@
 #include <functional>
 #include <unordered_map>
 #include <cassert>
+#include <mutex>
 
 using TimeStamp = std::chrono::steady_clock::time_point;
 using Clock = std::chrono::steady_clock;
@@ -43,6 +44,7 @@ private:
     void SwapNode(size_t i, size_t j);
     std::vector<TimerNode> heap;
     std::unordered_map<int, std::vector<TimerNode>::size_type> node_pos;
+    std::mutex queue_mutex;
 
 };
 

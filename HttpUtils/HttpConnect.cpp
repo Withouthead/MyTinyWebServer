@@ -55,7 +55,7 @@ void HttpConnect::Close() {
     if(is_close)
         return;
     is_close = true;
-    ServerLog::LogInfo("%s Connection closed", inet_ntoa(client_sockaddr.sin_addr));
+
     http_response.UnmapFile();
     close(client_sockfd);
 
