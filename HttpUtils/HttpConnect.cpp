@@ -52,6 +52,10 @@ ssize_t HttpConnect::Write(int& write_error) {
 }
 
 void HttpConnect::Close() {
+    if(is_close)
+        return;
+    is_close = true;
+    ServerLog::LogInfo("%s Connection closed", inet_ntoa(client_sockaddr.sin_addr));
     http_response.UnmapFile();
     close(client_sockfd);
 
@@ -120,5 +124,9 @@ bool HttpConnect::IsKeepAlive() const {
 
 const sockaddr_in &HttpConnect::getClientSockaddr() const {
     return client_sockaddr;
+}
+
+bool HttpConnect::IsClose() const {
+    return is_close;
 }
 

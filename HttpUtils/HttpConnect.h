@@ -36,6 +36,7 @@ public:
     int getClientSockfd() const;
     int ToWriteSize() const;
     bool IsKeepAlive() const;
+    bool IsClose() const;
 private:
     int client_sockfd;
     sockaddr_in client_sockaddr;

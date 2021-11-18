@@ -189,9 +189,12 @@ void WebServer::AddClient(int fd, sockaddr_in &addr) {
 }
 
 void WebServer::CloseConnect(HttpConnect *client) {
+    if(client->IsClose())
+        return;
     assert(client);
-    ServerLog::LogInfo("%s Connection closed", inet_ntoa(client->getClientSockaddr().sin_addr));
+    std::string addr_s(inet_ntoa(client->getClientSockaddr().sin_addr));
     epoller.DelFd(client->getClientSockfd());
+    timer.DelNodeByFd(client->getClientSockfd());
     client->Close();
 }
 

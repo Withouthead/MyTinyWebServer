@@ -93,12 +93,28 @@ void HeapTimer::DelNode(int index) {
     heap.pop_back();
 }
 
+void HeapTimer::DelNodeByFd(int fd) {
+    if(node_pos.count(fd) <= 0)
+        return;
+    size_t index = node_pos[fd];
+    size_t heap_size = heap.size();
+    assert(index < heap_size && index >= 0);
+    size_t del_index = heap_size - 1;
+    if(del_index > index)
+    {
+        SwapNode(index, del_index);
+        Heapify(index);
+    }
+    node_pos.erase(heap.back().id);
+    heap.pop_back();
+}
 void HeapTimer::Tick() {
     if(heap.empty())
         return;
     while(!heap.empty())
     {
         TimerNode node = heap.front();
+        int temp = std::chrono::duration_cast<MS>(node.expires - Clock::now()).count();
         if(std::chrono::duration_cast<MS>(node.expires - Clock::now()).count() > 0)
             break;
         node.call_back();

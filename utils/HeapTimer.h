@@ -29,12 +29,14 @@ struct TimerNode
 class HeapTimer {
 public:
     void AddNde(int id, int timeout, const TimeoutCallBack& call_back);
-    void DelNode(int index);
+
     void Tick();
     int GetTopTick();
     void Clear();
     void Update(int id, int timeout);
+    void DelNodeByFd(int fd);
 private:
+    void DelNode(int index);
     void HeapifyDown(size_t index);
     void HeapifyUp(size_t index);
     void Heapify(size_t index);
