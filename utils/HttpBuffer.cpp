@@ -36,12 +36,19 @@ void HttpBuffer::ClearAllBuffer() {
 }
 
 unsigned long HttpBuffer::SearchSubString(const std::string &s) {
-    return buff.find(s, usable_index);
+    size_t index = buff.find(s, usable_index);
+    if(index == std::string::npos)
+    {
+        return std::string ::npos;
+    }
+    return  index - usable_index;
 }
 
 std::string HttpBuffer::GetStringFromReadBuffer(size_t index) {//如果找不到是返回string::nop
+    if(index == std::string::npos)
+        index = buff.size() - usable_index;
     std::string sub_string = buff.substr(usable_index, index + 1);
-    FixPosition(index + 1);
+    FixPosition(index + 1 + usable_index);
     return sub_string;
 }
 

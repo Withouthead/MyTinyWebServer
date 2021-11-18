@@ -16,7 +16,7 @@
 class MySqlPool {
 public:
     static MySqlPool* GetInstance();
-    void Init(const std::string& host, int port, const std::string& user, const std::string pwd, const std::string& database, int connect_size);
+    static void Init(const std::string& host, int port, const std::string& user, std::string pwd, const std::string& database, int connect_size);
     MYSQL* GetConnection();
     void FreeConnection(MYSQL* sql);
 

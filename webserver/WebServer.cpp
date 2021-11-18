@@ -4,8 +4,9 @@
 
 #include "WebServer.h"
 int HttpConnect::user_count;
-WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, int thread_num, const std::string& src_dir_)
-:port(port_), timeout(timeout_), thread_pool(thread_num), open_linger(opt_linger_){
+WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, int thread_num, const std::string& src_dir_,
+                     const std::string& sql_username, const std::string& sql_password, const std::string& sql_host, const std::string& database, const int sql_port)
+                     :port(port_), timeout(timeout_), thread_pool(thread_num), open_linger(opt_linger_){
 
     ServerLog::Init("./log", ".log");
     ServerLog::LogInfo("Server Init successfully");
@@ -24,6 +25,7 @@ WebServer::WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, i
     is_close = false;
     InitEventMode(trig_mode);
     is_close = !InitServerSocket();
+    MySqlPool::Init(sql_host, sql_port, sql_username, sql_password, database, 20);
 }
 WebServer::~WebServer() {
     close(server_fd);

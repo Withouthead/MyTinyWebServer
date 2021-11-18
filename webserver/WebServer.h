@@ -10,11 +10,13 @@
 #include "../utils/HeapTimer.h"
 #include "../utils/ThreadPool.h"
 #include "../utils/ServerLog.h"
+#include "../utils/MySqlPool.h"
 #include "Epoller.h"
 
 class WebServer {
 public:
-    WebServer(int port_, int trig_mode, int timeout_, bool opt_linger, int thread_num, const std::string& src_dir_ = "");
+    WebServer(int port_, int trig_mode, int timeout_, bool opt_linger_, int thread_num, const std::string& src_dir_,
+    const std::string& sql_username, const std::string& sql_password, const std::string& sql_host, const std::string& database, const int sql_port);
     void StartServer();
     bool InitServerSocket();
     void InitEventMode(int trig_mode);

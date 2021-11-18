@@ -19,7 +19,7 @@
 #include <mysql/mysql.h>
 #include "../utils/HttpBuffer.h"
 #include "../utils/ServerLog.h"
-#include "../utils/json.hpp"
+#include <nlohmann/json.hpp>
 #include "../utils/MySqlPool.h"
 #include "../utils/MySqlPoolRAII.h"
 
@@ -83,7 +83,7 @@ private:
     };
     const std::unordered_map<std::string, int>DEFAULT_HTML_TAG
             {
-                    {"/index", 0}, {"/login", 1}
+                    {"/index.html", 0}, {"/login.html", 1}
             };
 
 

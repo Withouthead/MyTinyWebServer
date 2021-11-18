@@ -23,7 +23,7 @@ bool HttpRequest::ParseRequestLine(const std::string& line) {
 }
 
 void HttpRequest::ParseHeader(const std::string& header) {
-    std::regex request_header_regex("^([^:]) ?(.*)$");
+    std::regex request_header_regex("^([^:]*): ?(.*)$");
     std::smatch sub_match;
     if(std::regex_match(header, sub_match, request_header_regex))
     {
@@ -35,6 +35,7 @@ void HttpRequest::ParseHeader(const std::string& header) {
 
 void HttpRequest::ParseBody(const std::string& body) {
     http_body = body;
+    ParsePost();
     state = FINISH;
 }
 
@@ -42,8 +43,14 @@ bool HttpRequest::Parse(HttpBuffer &buffer) {
     const std::string CRLF = "\r\n";
     while (state != FINISH && buffer.UsableSize()) {
         size_t crlf_index = buffer.SearchSubString(CRLF);
-        std::string line(buffer.GetStringFromReadBuffer(crlf_index + CRLF.size() - 1));
-        line = line.substr(0, line.size() - CRLF.size());
+        std::string line;
+        if(crlf_index != std::string::npos) {
+            line = buffer.GetStringFromReadBuffer(crlf_index + CRLF.size() - 1);
+            line = line.substr(0, line.size() - CRLF.size());
+        }
+        else
+             line = buffer.GetStringFromReadBuffer(crlf_index);
+
         switch (state) {
             case REQUEST_LINE:
                 if (!ParseRequestLine(line))
@@ -114,7 +121,7 @@ void HttpRequest::ParsePost() {
     if(header_info["Content-Type"] == "application/x-www-form-urlencoded")
         ParseUrlEncode();
     if(header_info["Content-Type"] == "application/json")
-        ParseUrlEncode();
+        ParseJson();
     else
     {
         ServerLog::LogError("Only support json and urlencoded!");
@@ -126,6 +133,9 @@ void HttpRequest::ParsePost() {
         if(tag == 0 || tag == 1)
         {
             is_login = (tag == 1);
+
+            std::string temo = post_info.dump();
+            ServerLog::LogDeBug("%s", temo.c_str());
             if(UserAuth(post_info["username"], post_info["password"]))
             {
                 http_request_path = "/welcome.html";
@@ -183,7 +193,7 @@ int HttpRequest::ToDec(char c) {
 }
 
 void HttpRequest::ParseJson() {
-    post_info = http_body;
+    post_info = json::parse(http_body);
     ServerLog::LogDeBug("ParseJson successfully!");
 }
 

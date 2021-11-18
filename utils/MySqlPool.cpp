@@ -11,6 +11,7 @@ MySqlPool *MySqlPool::GetInstance() {
 
 void MySqlPool::Init(const std::string& host, int port, const std::string& user, const std::string pwd,
                      const std::string& database, int connect_size) {
+    MySqlPool* p = GetInstance();
     assert(connect_size);
     ServerLog::LogDeBug("=============INIT MySqlPool===============");
     for(int i = 0; i < connect_size; i++)
@@ -28,9 +29,9 @@ void MySqlPool::Init(const std::string& host, int port, const std::string& user,
             ServerLog::LogError("Mysql Init Error");
             assert(sql);
         }
-        connection_queue.push(sql);
+        p->connection_queue.push(sql);
     }
-    max_connect_size = connect_size;
+    p->max_connect_size = connect_size;
 }
 
 MYSQL *MySqlPool::GetConnection() {
